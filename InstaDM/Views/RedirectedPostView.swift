@@ -3,6 +3,8 @@ import SwiftUI
 struct RedirectedPostView: View {
     @State private var url: URL?
     @State private var showWebView = false
+    @State private var isUserLoggedIn: Bool = UserDefaults.standard.bool(forKey: "isUserLoggedIn") // ✅ Track login state
+
 
     var body: some View {
         VStack {
@@ -11,7 +13,7 @@ struct RedirectedPostView: View {
                     showWebView = true
                 }
                 .fullScreenCover(isPresented: $showWebView) {
-                    SafariWebView(url: url) // ✅ Removed `isPresented`
+                    SafariWebView(url: url, isUserLoggedIn: $isUserLoggedIn) // ✅ Removed `isPresented`
                 }
             } else {
                 Text("No post opened yet.")
