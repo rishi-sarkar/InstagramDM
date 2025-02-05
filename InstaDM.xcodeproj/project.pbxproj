@@ -3,27 +3,30 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		5B43F87C2D52D70C00963028 /* InstaDMApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B43F87B2D52D70C00963028 /* InstaDMApp.swift */; };
-		5B43F87E2D52D70C00963028 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B43F87D2D52D70C00963028 /* ContentView.swift */; };
 		5B43F8802D52D70E00963028 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5B43F87F2D52D70E00963028 /* Assets.xcassets */; };
 		5B43F8832D52D70E00963028 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5B43F8822D52D70E00963028 /* Preview Assets.xcassets */; };
-		5B43F8852D52D70E00963028 /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B43F8842D52D70E00963028 /* Persistence.swift */; };
 		5B43F8882D52D70E00963028 /* InstaDM.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 5B43F8862D52D70E00963028 /* InstaDM.xcdatamodeld */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		5B43F8782D52D70C00963028 /* InstaDM.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = InstaDM.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		5B0F05BD2D53CC0C00E01D43 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		5B41BEAD2D53CE68002F30BD /* InstaDM.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = InstaDM.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5B43F87B2D52D70C00963028 /* InstaDMApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstaDMApp.swift; sourceTree = "<group>"; };
-		5B43F87D2D52D70C00963028 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		5B43F87F2D52D70E00963028 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		5B43F8822D52D70E00963028 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-		5B43F8842D52D70E00963028 /* Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
 		5B43F8872D52D70E00963028 /* InstaDM.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = InstaDM.xcdatamodel; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		5B0F05B42D53CA2300E01D43 /* Controllers */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Controllers; sourceTree = "<group>"; };
+		5B0F05B62D53CA3F00E01D43 /* Views */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Views; sourceTree = "<group>"; };
+		5B0F05B72D53CA5800E01D43 /* Utilities */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Utilities; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		5B43F8752D52D70C00963028 /* Frameworks */ = {
@@ -40,26 +43,20 @@
 			isa = PBXGroup;
 			children = (
 				5B43F87A2D52D70C00963028 /* InstaDM */,
-				5B43F8792D52D70C00963028 /* Products */,
+				5B41BEAD2D53CE68002F30BD /* InstaDM.app */,
 			);
-			sourceTree = "<group>";
-		};
-		5B43F8792D52D70C00963028 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				5B43F8782D52D70C00963028 /* InstaDM.app */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 		5B43F87A2D52D70C00963028 /* InstaDM */ = {
 			isa = PBXGroup;
 			children = (
 				5B43F87B2D52D70C00963028 /* InstaDMApp.swift */,
-				5B43F87D2D52D70C00963028 /* ContentView.swift */,
-				5B43F87F2D52D70E00963028 /* Assets.xcassets */,
-				5B43F8842D52D70E00963028 /* Persistence.swift */,
+				5B0F05BD2D53CC0C00E01D43 /* Info.plist */,
+				5B0F05B62D53CA3F00E01D43 /* Views */,
+				5B0F05B42D53CA2300E01D43 /* Controllers */,
+				5B0F05B72D53CA5800E01D43 /* Utilities */,
 				5B43F8862D52D70E00963028 /* InstaDM.xcdatamodeld */,
+				5B43F87F2D52D70E00963028 /* Assets.xcassets */,
 				5B43F8812D52D70E00963028 /* Preview Content */,
 			);
 			path = InstaDM;
@@ -88,9 +85,14 @@
 			);
 			dependencies = (
 			);
+			fileSystemSynchronizedGroups = (
+				5B0F05B42D53CA2300E01D43 /* Controllers */,
+				5B0F05B62D53CA3F00E01D43 /* Views */,
+				5B0F05B72D53CA5800E01D43 /* Utilities */,
+			);
 			name = InstaDM;
 			productName = InstaDM;
-			productReference = 5B43F8782D52D70C00963028 /* InstaDM.app */;
+			productReference = 5B41BEAD2D53CE68002F30BD /* InstaDM.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -117,7 +119,7 @@
 				Base,
 			);
 			mainGroup = 5B43F86F2D52D70C00963028;
-			productRefGroup = 5B43F8792D52D70C00963028 /* Products */;
+			productRefGroup = 5B43F86F2D52D70C00963028;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -144,8 +146,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				5B43F8882D52D70E00963028 /* InstaDM.xcdatamodeld in Sources */,
-				5B43F8852D52D70E00963028 /* Persistence.swift in Sources */,
-				5B43F87E2D52D70C00963028 /* ContentView.swift in Sources */,
 				5B43F87C2D52D70C00963028 /* InstaDMApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -272,9 +272,11 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"InstaDM/Preview Content\"";
+				DEVELOPMENT_TEAM = TUUCB9539Y;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -289,6 +291,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.rishisarkar.InstaDM;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -300,9 +303,11 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"InstaDM/Preview Content\"";
+				DEVELOPMENT_TEAM = TUUCB9539Y;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -317,6 +322,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.rishisarkar.InstaDM;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
