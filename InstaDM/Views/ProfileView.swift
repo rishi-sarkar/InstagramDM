@@ -1,19 +1,13 @@
 import SwiftUI
 
 struct ProfileView: View {
+    @StateObject private var updateProfileView = UpdateProfileView()  // ✅ Owns the instance
+
+
     var body: some View {
-        VStack {
-            Image(systemName: "person.crop.circle.fill")
-                .resizable()
-                .frame(width: 100, height: 100)
-                .padding()
-
-            Text("User Profile")
-                .font(.title)
-                .bold()
-
-            Spacer()
+        ZStack {
+            SafariWebView(url: URL(string: "https://www.instagram.com/direct/inbox")!)
+                .environmentObject(updateProfileView)
         }
-        .navigationTitle("Profile")
     }
 }

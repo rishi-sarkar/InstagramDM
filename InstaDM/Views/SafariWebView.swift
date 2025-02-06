@@ -3,6 +3,10 @@ import SwiftUI
 
 struct SafariWebView: UIViewRepresentable {
     let url: URL
+    
+//    @EnvironmentObject var userLogin: UserLogin  // ✅ Access global login state
+//    @EnvironmentObject var userSession: UserSession  // ✅ Access global login state
+//    @EnvironmentObject var userSession: UserSession  // ✅ Access global login state
 
     func makeUIView(context: Context) -> WKWebView {
         let webView = WKWebView()
@@ -32,19 +36,22 @@ struct SafariWebView: UIViewRepresentable {
             if let currentURL = navigationAction.request.url?.absoluteString {
                 print("📢 Current URL: \(currentURL)")
                 
-                // ✅ Ignore `about:blank` and referer redirects
-                if currentURL == "about:blank" || currentURL.contains("instagram.com/common/referer_frame.php") {
-                    print("⚠️ Ignoring internal redirect: \(currentURL)")
-                    decisionHandler(.cancel)
-                    return
-                }
+//                // ✅ Ignore `about:blank` and referer redirects
+//                if currentURL == "about:blank" || currentURL.contains("instagram.com/common/referer_frame.php") {
+//                    print("⚠️ Ignoring internal redirect: \(currentURL)")
+//                    decisionHandler(.cancel)
+//                    return
+//                }
                 
                 // Check if the URL contains the login endpoint.
                 if currentURL.contains("instagram.com/accounts/login") {
-                    // If the user was previously logged in, then they have been logged out mid-session.
-                    if UserDefaults.standard.bool(forKey: "isUserLoggedIn") {
-                        print("⚠️ User logged out mid-session. Redirecting to LoginView.")
-                        NotificationCenter.default.post(name: .userDidLogout, object: nil)
+                    DispatchQueue.main.async {
+                        // If the user was previously logged in, then they have been logged out mid-session.
+                        if UserDefaults.standard.bool(forKey: "isUserLoggedIn") {
+                            print("⚠️ User logged out mid-session. Redirecting to LoginView.")
+                            self.parent.isUserLoggedIn = false
+                            UserDefaults.standard.set(false, forKey: "isUserLoggedIn")
+                        }
                     }
                     decisionHandler(.allow)
                     return
@@ -57,8 +64,9 @@ struct SafariWebView: UIViewRepresentable {
                 }
                 // ✅ Allow `facebook.com/instagram/login_sync` without redirecting
                 if currentURL.contains("facebook.com/instagram/login_sync") {
-                    print("🆗 Allowing Facebook login sync page")
-                    decisionHandler(.allow)
+                    NotificationCenter.default.post(name: .userDidLogin, object: nil)
+                    print("🆗 NOT allowing Facebook login sync page")
+                    decisionHandler(.cancel)
                     return
                 }
 
