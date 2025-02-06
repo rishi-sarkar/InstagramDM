@@ -4,7 +4,7 @@ import SwiftUI
 struct InstaDMApp: App {
     var body: some Scene {
         WindowGroup {
-            InitialScreenView()
+            ContentView()
         }
     }
 }

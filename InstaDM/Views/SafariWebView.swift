@@ -3,7 +3,6 @@ import SwiftUI
 
 struct SafariWebView: UIViewRepresentable {
     let url: URL
-    @Binding var isUserLoggedIn: Bool // ✅ Bind login status
 
     func makeUIView(context: Context) -> WKWebView {
         let webView = WKWebView()
@@ -12,7 +11,9 @@ struct SafariWebView: UIViewRepresentable {
         return webView
     }
 
-    func updateUIView(_ uiView: WKWebView, context: Context) {}
+    func updateUIView(_ uiView: WKWebView, context: Context) {
+        // No update logic required.
+    }
 
     func makeCoordinator() -> Coordinator {
         Coordinator(self)
@@ -25,29 +26,35 @@ struct SafariWebView: UIViewRepresentable {
             self.parent = parent
         }
 
-        func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+        func webView(_ webView: WKWebView,
+                     decidePolicyFor navigationAction: WKNavigationAction,
+                     decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
             if let currentURL = navigationAction.request.url?.absoluteString {
-                print("📢 Current URL: \(currentURL)") // ✅ Debugging
-
-                // ✅ Check if redirected to login page (User is NOT logged in) and exit
+                print("📢 Current URL: \(currentURL)")
+                
+                // ✅ Ignore `about:blank` and referer redirects
+                if currentURL == "about:blank" || currentURL.contains("instagram.com/common/referer_frame.php") {
+                    print("⚠️ Ignoring internal redirect: \(currentURL)")
+                    decisionHandler(.cancel)
+                    return
+                }
+                
+                // Check if the URL contains the login endpoint.
                 if currentURL.contains("instagram.com/accounts/login") {
-                    print("❌ User is NOT logged in - Exiting Function")
-                    DispatchQueue.main.async {
-                        self.parent.isUserLoggedIn = false
-                        UserDefaults.standard.set(false, forKey: "isUserLoggedIn") // ✅ Save login state
+                    // If the user was previously logged in, then they have been logged out mid-session.
+                    if UserDefaults.standard.bool(forKey: "isUserLoggedIn") {
+                        print("⚠️ User logged out mid-session. Redirecting to LoginView.")
+                        NotificationCenter.default.post(name: .userDidLogout, object: nil)
                     }
-                    decisionHandler(.allow) // ✅ Allow navigation to login page
-                    return // ✅ Exit function immediately (skip further checks)
+                    decisionHandler(.allow)
+                    return
                 }
-                else if (!self.parent.isUserLoggedIn) {
-                    print("✅ User Logged In - Enabling Redirects")
-                    DispatchQueue.main.async {
-                        self.parent.isUserLoggedIn = true
-                        UserDefaults.standard.set(true, forKey: "isUserLoggedIn") // ✅ Save login state
-                        NotificationCenter.default.post(name: .userDidLogin, object: nil) // ✅ Notify InitialScreenView
-                    }
+                
+                if !currentURL.contains("/accounts"), !UserDefaults.standard.bool(forKey: "isUserLoggedIn") {
+                    NotificationCenter.default.post(name: .userDidLogin, object: nil)
+                    decisionHandler(.cancel)
+                    return
                 }
-
                 // ✅ Allow `facebook.com/instagram/login_sync` without redirecting
                 if currentURL.contains("facebook.com/instagram/login_sync") {
                     print("🆗 Allowing Facebook login sync page")
@@ -58,7 +65,7 @@ struct SafariWebView: UIViewRepresentable {
                 // ✅ Redirect if not on `/direct/`
                 if !currentURL.contains("instagram.com/direct/") {
                     print("🔄 Redirecting to Instagram Direct Inbox")
-                    webView.load(URLRequest(url: URL(string: "https://www.instagram.com/direct/inbox/")!))
+                    NotificationCenter.default.post(name: .userDidLogin, object: nil)
                     decisionHandler(.cancel)
                     return
                 }
@@ -66,9 +73,4 @@ struct SafariWebView: UIViewRepresentable {
             decisionHandler(.allow)
         }
     }
-}
-
-// ✅ Notification Name for Login Event
-extension Notification.Name {
-    static let userDidLogin = Notification.Name("userDidLogin")
 }

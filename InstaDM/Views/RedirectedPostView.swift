@@ -13,7 +13,7 @@ struct RedirectedPostView: View {
                     showWebView = true
                 }
                 .fullScreenCover(isPresented: $showWebView) {
-                    SafariWebView(url: url, isUserLoggedIn: $isUserLoggedIn) // ✅ Removed `isPresented`
+                    SafariWebView(url: url) // ✅ Removed `isPresented`
                 }
             } else {
                 Text("No post opened yet.")
