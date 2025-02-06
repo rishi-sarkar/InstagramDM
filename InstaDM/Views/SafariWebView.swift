@@ -28,9 +28,16 @@ struct SafariWebView: UIViewRepresentable {
         func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
             if let currentURL = navigationAction.request.url?.absoluteString {
                 print("📢 Current URL: \(currentURL)") // ✅ Debugging
-
+                
+                // ✅ Ignore `about:blank` and referer redirects
+//                if currentURL == "about:blank" || currentURL.contains("instagram.com/common/referer_frame.php") {
+//                    print("⚠️ Ignoring internal redirect: \(currentURL)")
+//                    decisionHandler(.cancel)
+//                    return
+//                }
+                
                 // ✅ Check if redirected to login page (User is NOT logged in) and exit
-                if currentURL.contains("instagram.com/accounts/login") {
+                if currentURL.contains("instagram.com/accounts") {
                     print("❌ User is NOT logged in - Exiting Function")
                     DispatchQueue.main.async {
                         self.parent.isUserLoggedIn = false
@@ -44,7 +51,7 @@ struct SafariWebView: UIViewRepresentable {
                     DispatchQueue.main.async {
                         self.parent.isUserLoggedIn = true
                         UserDefaults.standard.set(true, forKey: "isUserLoggedIn") // ✅ Save login state
-                        NotificationCenter.default.post(name: .userDidLogin, object: nil) // ✅ Notify InitialScreenView
+//                        NotificationCenter.default.post(name: .userDidLogin, object: nil) // ✅ Notify InitialScreenView
                     }
                 }
 
@@ -68,7 +75,7 @@ struct SafariWebView: UIViewRepresentable {
     }
 }
 
-// ✅ Notification Name for Login Event
-extension Notification.Name {
-    static let userDidLogin = Notification.Name("userDidLogin")
-}
+//// ✅ Notification Name for Login Event
+//extension Notification.Name {
+//    static let userDidLogin = Notification.Name("userDidLogin")
+//}

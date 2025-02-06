@@ -20,13 +20,13 @@ struct RedirectedPostView: View {
                     .foregroundColor(.gray)
             }
         }
-        .onReceive(NotificationCenter.default.publisher(for: .newChatLink)) { notification in
-            if let userInfo = notification.userInfo,
-               let link = userInfo["link"] as? String,
-               let validURL = URL(string: link) {
-                self.url = validURL
-                print("Updated URL: \(validURL)") // ✅ Debugging
-            }
-        }
+//        .onReceive(NotificationCenter.default.publisher(for: .newChatLink)) { notification in
+//            if let userInfo = notification.userInfo,
+//               let link = userInfo["link"] as? String,
+//               let validURL = URL(string: link) {
+//                self.url = validURL
+//                print("Updated URL: \(validURL)") // ✅ Debugging
+//            }
+//        }
     }
 }
