@@ -6,7 +6,6 @@ struct RedirectedPostView: View {
     @State private var isUserLoggedIn: Bool = UserDefaults.standard.bool(forKey: "isUserLoggedIn") // ✅ Track login state
     @EnvironmentObject var userLogin: UserLogin  // ✅ Access global login state
 
-
     var body: some View {
         VStack {
             if let url = url {
