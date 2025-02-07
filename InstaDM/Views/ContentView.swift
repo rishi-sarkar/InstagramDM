@@ -11,6 +11,7 @@ struct ContentView: View {
         NavigationView {
             if self.userLogin.isUserLoggedIn {
                 MainView() // Show MainView when logged in
+                    .environmentObject(userLogin)
             } else {
                 LoginView() // Show LoginView when logged out
                     .environmentObject(userLogin)

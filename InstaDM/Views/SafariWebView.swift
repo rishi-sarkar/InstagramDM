@@ -4,9 +4,10 @@ import SwiftUI
 struct SafariWebView: UIViewRepresentable {
     let url: URL
     
-//    @EnvironmentObject var userLogin: UserLogin  // ✅ Access global login state
-//    @EnvironmentObject var userSession: UserSession  // ✅ Access global login state
-//    @EnvironmentObject var userSession: UserSession  // ✅ Access global login state
+    @EnvironmentObject var userLogin: UserLogin  // ✅ Access global login state
+    @EnvironmentObject var updateMessageView: UpdateMessageView  // ✅ Access global login state
+    @EnvironmentObject var updateRedirectView: UpdateRedirectView  // ✅ Access global login state
+    @EnvironmentObject var updateProfileView: UpdateProfileView  // ✅ Access global login state
 
     func makeUIView(context: Context) -> WKWebView {
         let webView = WKWebView()
@@ -45,21 +46,18 @@ struct SafariWebView: UIViewRepresentable {
                 
                 // Check if the URL contains the login endpoint.
                 if currentURL.contains("instagram.com/accounts/login") {
-                    DispatchQueue.main.async {
-                        // If the user was previously logged in, then they have been logged out mid-session.
-                        if UserDefaults.standard.bool(forKey: "isUserLoggedIn") {
+                    if self.parent.userLogin.isUserLoggedIn {
+                        DispatchQueue.main.async {
                             print("⚠️ User logged out mid-session. Redirecting to LoginView.")
-                            self.parent.isUserLoggedIn = false
-                            UserDefaults.standard.set(false, forKey: "isUserLoggedIn")
+                            self.parent.userLogin.isUserLoggedIn = false
                         }
                     }
                     decisionHandler(.allow)
                     return
                 }
-                
-                if !currentURL.contains("/accounts"), !UserDefaults.standard.bool(forKey: "isUserLoggedIn") {
-                    NotificationCenter.default.post(name: .userDidLogin, object: nil)
-                    decisionHandler(.cancel)
+                else if !self.parent.userLogin.isUserLoggedIn {
+                    self.parent.userLogin.isUserLoggedIn = true
+                    decisionHandler(.allow)
                     return
                 }
                 // ✅ Allow `facebook.com/instagram/login_sync` without redirecting
