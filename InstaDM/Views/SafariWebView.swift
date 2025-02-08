@@ -63,15 +63,16 @@ struct SafariWebView: UIViewRepresentable {
                 // ✅ Allow `facebook.com/instagram/login_sync` without redirecting
                 if currentURL.contains("facebook.com/instagram/login_sync") {
                     NotificationCenter.default.post(name: .userDidLogin, object: nil)
-                    print("🆗 NOT allowing Facebook login sync page")
-                    decisionHandler(.cancel)
+                    print("🆗 Allowing Facebook login sync page")
+                    decisionHandler(.allow)
                     return
                 }
 
                 // ✅ Redirect if not on `/direct/`
                 if !currentURL.contains("instagram.com/direct/") {
                     print("🔄 Redirecting to Instagram Direct Inbox")
-                    NotificationCenter.default.post(name: .userDidLogin, object: nil)
+//                    webView.load(URLRequest(url: URL(string: "https://www.instagram.com/direct/inbox/")!))
+                    self.parent.updateMessageView.updateMessageView = !self.parent.updateMessageView.updateMessageView
                     decisionHandler(.cancel)
                     return
                 }
