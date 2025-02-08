@@ -13,7 +13,7 @@ struct RedirectedPostView: View {
                     showWebView = true
                 }
                 .fullScreenCover(isPresented: $showWebView) {
-                    SafariWebView(url: url) // ✅ Removed `isPresented`
+                    SafariWebView(url: url, caller: "Redirected") // ✅ Removed `isPresented`
                         .environmentObject(userLogin)
 
                 }

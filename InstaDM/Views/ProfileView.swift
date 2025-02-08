@@ -7,7 +7,7 @@ struct ProfileView: View {
 
     var body: some View {
         ZStack {
-            SafariWebView(url: URL(string: "https://www.instagram.com/direct/inbox")!)
+            SafariWebView(url: URL(string: "https://www.instagram.com/rishi.sarkar")!, caller: "Profile")
                 .environmentObject(updateProfileView)
                 .environmentObject(userLogin)
 

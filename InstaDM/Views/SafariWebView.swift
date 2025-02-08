@@ -3,6 +3,7 @@ import SwiftUI
 
 struct SafariWebView: UIViewRepresentable {
     let url: URL
+    let caller: String
     
     @EnvironmentObject var userLogin: UserLogin  // ✅ Access global login state
     @EnvironmentObject var updateMessageView: UpdateMessageView  // ✅ Access global login state
@@ -38,12 +39,17 @@ struct SafariWebView: UIViewRepresentable {
                 print("📢 Current URL: \(currentURL)")
                 
 //                // ✅ Ignore `about:blank` and referer redirects
-//                if currentURL == "about:blank" || currentURL.contains("instagram.com/common/referer_frame.php") {
+//                if currentURL == "about:blank" ||      currentURL.contains("instagram.com/common/referer_frame.php") {
 //                    print("⚠️ Ignoring internal redirect: \(currentURL)")
 //                    decisionHandler(.cancel)
 //                    return
 //                }
-                
+                // ✅ Allow `facebook.com/instagram/login_sync` without redirecting
+                if currentURL.contains("facebook.com/instagram/login_sync") {
+                    print("🆗 Allowing Facebook login sync page")
+                    decisionHandler(.allow)
+                    return
+                }
                 // Check if the URL contains the login endpoint.
                 if currentURL.contains("instagram.com/accounts/login") {
                     if self.parent.userLogin.isUserLoggedIn {
@@ -60,22 +66,35 @@ struct SafariWebView: UIViewRepresentable {
                     decisionHandler(.allow)
                     return
                 }
-                // ✅ Allow `facebook.com/instagram/login_sync` without redirecting
-                if currentURL.contains("facebook.com/instagram/login_sync") {
-                    NotificationCenter.default.post(name: .userDidLogin, object: nil)
-                    print("🆗 Allowing Facebook login sync page")
-                    decisionHandler(.allow)
-                    return
+                
+                if self.parent.caller == "Profile" {
+                    if currentURL == "about:blank" ||      currentURL.contains("instagram.com/common/referer_frame.php") {
+                        print("⚠️ Ignoring internal redirect: \(currentURL)")
+                        webView.load(URLRequest(url: URL(string: "https://www.instagram.com/rishi.sarkar")!))
+                        self.parent.updateProfileView.updateProfileView = !self.parent.updateProfileView.updateProfileView
+                        decisionHandler(.cancel)
+                        return
+                    }
+                    // ✅ Redirect if not on `/direct/`
+                    if !currentURL.contains("instagram.com/rishi.sarkar") {
+                        print("🔄 Redirecting to Profile")
+                        webView.load(URLRequest(url: URL(string: "https://www.instagram.com/rishi.sarkar")!))
+                        self.parent.updateProfileView.updateProfileView = !self.parent.updateProfileView.updateProfileView
+                        decisionHandler(.cancel)
+                        return
+                    }
+                }
+                if self.parent.caller == "Messages" {
+                    // ✅ Redirect if not on `/direct/`
+                    if !currentURL.contains("instagram.com/direct/") {
+                        print("🔄 Redirecting to Instagram Direct Inbox")
+                        webView.load(URLRequest(url: URL(string: "https://www.instagram.com/direct/inbox/")!))
+                        self.parent.updateMessageView.updateMessageView = !self.parent.updateMessageView.updateMessageView
+                        decisionHandler(.cancel)
+                        return
+                    }
                 }
 
-                // ✅ Redirect if not on `/direct/`
-                if !currentURL.contains("instagram.com/direct/") {
-                    print("🔄 Redirecting to Instagram Direct Inbox")
-                    webView.load(URLRequest(url: URL(string: "https://www.instagram.com/direct/inbox/")!))
-//                    self.parent.updateMessageView.updateMessageView = !self.parent.updateMessageView.updateMessageView
-                    decisionHandler(.cancel)
-                    return
-                }
             }
             decisionHandler(.allow)
         }
