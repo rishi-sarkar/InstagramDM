@@ -25,45 +25,58 @@ struct SafariWebView: UIViewRepresentable {
             self.parent = parent
         }
 
-        func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
-            if let currentURL = navigationAction.request.url?.absoluteString {
-                print("📢 Current URL: \(currentURL)") // ✅ Debugging
-
-                // ✅ Check if redirected to login page (User is NOT logged in) and exit
-                if currentURL.contains("instagram.com/accounts/login") {
-                    print("❌ User is NOT logged in - Exiting Function")
-                    DispatchQueue.main.async {
-                        self.parent.isUserLoggedIn = false
-                        UserDefaults.standard.set(false, forKey: "isUserLoggedIn") // ✅ Save login state
-                    }
-                    decisionHandler(.allow) // ✅ Allow navigation to login page
-                    return // ✅ Exit function immediately (skip further checks)
-                }
-                else if (!self.parent.isUserLoggedIn) {
-                    print("✅ User Logged In - Enabling Redirects")
-                    DispatchQueue.main.async {
-                        self.parent.isUserLoggedIn = true
-                        UserDefaults.standard.set(true, forKey: "isUserLoggedIn") // ✅ Save login state
-                        NotificationCenter.default.post(name: .userDidLogin, object: nil) // ✅ Notify InitialScreenView
-                    }
-                }
-
-                // ✅ Allow `facebook.com/instagram/login_sync` without redirecting
-                if currentURL.contains("facebook.com/instagram/login_sync") {
-                    print("🆗 Allowing Facebook login sync page")
-                    decisionHandler(.allow)
-                    return
-                }
-
-                // ✅ Redirect if not on `/direct/`
-                if !currentURL.contains("instagram.com/direct/") {
-                    print("🔄 Redirecting to Instagram Direct Inbox")
-                    webView.load(URLRequest(url: URL(string: "https://www.instagram.com/direct/inbox/")!))
-                    decisionHandler(.cancel)
-                    return
-                }
-            }
+        // 1) Policy for navigation actions (already in your original code)
+        func webView(_ webView: WKWebView,
+                     decidePolicyFor navigationAction: WKNavigationAction,
+                     decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+            print("➡️ decidePolicyFor navigationAction: \(navigationAction.request.url?.absoluteString ?? "")")
             decisionHandler(.allow)
+        }
+
+        // 2) Policy for navigation responses
+        func webView(_ webView: WKWebView,
+                     decidePolicyFor navigationResponse: WKNavigationResponse,
+                     decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
+            print("➡️ decidePolicyFor navigationResponse: \(navigationResponse.response.url?.absoluteString ?? "")")
+            decisionHandler(.allow)
+        }
+
+        // 3) Called when navigation starts to load
+        func webView(_ webView: WKWebView,
+                     didStartProvisionalNavigation navigation: WKNavigation!) {
+            print("🟢 didStartProvisionalNavigation: \(webView.url?.absoluteString ?? "N/A")")
+        }
+
+        // 4) Called when the first byte is received
+        func webView(_ webView: WKWebView,
+                     didCommit navigation: WKNavigation!) {
+            print("🟢 didCommit navigation: \(webView.url?.absoluteString ?? "N/A")")
+        }
+
+        // 5) Called when navigation is complete
+        func webView(_ webView: WKWebView,
+                     didFinish navigation: WKNavigation!) {
+            print("✅ didFinish navigation: \(webView.url?.absoluteString ?? "N/A")")
+        }
+
+        // 6) Called if navigation fails
+        func webView(_ webView: WKWebView,
+                     didFail navigation: WKNavigation!,
+                     withError error: Error) {
+            print("❌ didFail navigation: \(error.localizedDescription)")
+        }
+
+        // 7) Called if navigation fails while the provisional (initial) request is being processed
+        func webView(_ webView: WKWebView,
+                     didFailProvisionalNavigation navigation: WKNavigation!,
+                     withError error: Error) {
+            print("❌ didFailProvisionalNavigation: \(error.localizedDescription)")
+        }
+
+        // 8) Called when the web view receives a server redirect
+        func webView(_ webView: WKWebView,
+                     didReceiveServerRedirectForProvisionalNavigation navigation: WKNavigation!) {
+            print("🔀 didReceiveServerRedirectForProvisionalNavigation")
         }
     }
 }
