@@ -71,8 +71,8 @@ struct SafariWebView: UIViewRepresentable {
                 // ✅ Redirect if not on `/direct/`
                 if !currentURL.contains("instagram.com/direct/") {
                     print("🔄 Redirecting to Instagram Direct Inbox")
-//                    webView.load(URLRequest(url: URL(string: "https://www.instagram.com/direct/inbox/")!))
-                    self.parent.updateMessageView.updateMessageView = !self.parent.updateMessageView.updateMessageView
+                    webView.load(URLRequest(url: URL(string: "https://www.instagram.com/direct/inbox/")!))
+//                    self.parent.updateMessageView.updateMessageView = !self.parent.updateMessageView.updateMessageView
                     decisionHandler(.cancel)
                     return
                 }
