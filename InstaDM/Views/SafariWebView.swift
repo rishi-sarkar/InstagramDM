@@ -6,8 +6,48 @@ struct SafariWebView: UIViewRepresentable {
     @Binding var isUserLoggedIn: Bool // ✅ Bind login status
 
     func makeUIView(context: Context) -> WKWebView {
-        let webView = WKWebView()
+        let contentController = WKUserContentController()
+        
+        // Add JavaScript message handler
+        contentController.add(context.coordinator, name: "urlChangeHandler")
+        
+        let config = WKWebViewConfiguration()
+        config.userContentController = contentController
+
+        let webView = WKWebView(frame: .zero, configuration: config)
         webView.navigationDelegate = context.coordinator
+
+        // ✅ JavaScript to listen for URL changes
+        let jsScript = """
+        function sendUrlChange() {
+            window.webkit.messageHandlers.urlChangeHandler.postMessage({ url: window.location.href });
+        }
+        
+        // Detect URL changes with pushState, replaceState, and popstate
+        (function(history) {
+            let pushState = history.pushState;
+            let replaceState = history.replaceState;
+            
+            history.pushState = function(state) {
+                pushState.apply(history, arguments);
+                sendUrlChange();
+            };
+            
+            history.replaceState = function(state) {
+                replaceState.apply(history, arguments);
+                sendUrlChange();
+            };
+            
+            window.addEventListener("popstate", sendUrlChange);
+        })(window.history);
+
+        // Send initial page load URL
+        sendUrlChange();
+        """
+
+        let userScript = WKUserScript(source: jsScript, injectionTime: .atDocumentEnd, forMainFrameOnly: false)
+        contentController.addUserScript(userScript)
+
         webView.load(URLRequest(url: url))
         return webView
     }
@@ -18,65 +58,21 @@ struct SafariWebView: UIViewRepresentable {
         Coordinator(self)
     }
 
-    class Coordinator: NSObject, WKNavigationDelegate {
+    // ✅ Fix: Make Coordinator conform to WKScriptMessageHandler
+    class Coordinator: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
         var parent: SafariWebView
 
         init(_ parent: SafariWebView) {
             self.parent = parent
         }
 
-        // 1) Policy for navigation actions (already in your original code)
-        func webView(_ webView: WKWebView,
-                     decidePolicyFor navigationAction: WKNavigationAction,
-                     decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
-            print("➡️ decidePolicyFor navigationAction: \(navigationAction.request.url?.absoluteString ?? "")")
-            decisionHandler(.allow)
-        }
-
-        // 2) Policy for navigation responses
-        func webView(_ webView: WKWebView,
-                     decidePolicyFor navigationResponse: WKNavigationResponse,
-                     decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
-            print("➡️ decidePolicyFor navigationResponse: \(navigationResponse.response.url?.absoluteString ?? "")")
-            decisionHandler(.allow)
-        }
-
-        // 3) Called when navigation starts to load
-        func webView(_ webView: WKWebView,
-                     didStartProvisionalNavigation navigation: WKNavigation!) {
-            print("🟢 didStartProvisionalNavigation: \(webView.url?.absoluteString ?? "N/A")")
-        }
-
-        // 4) Called when the first byte is received
-        func webView(_ webView: WKWebView,
-                     didCommit navigation: WKNavigation!) {
-            print("🟢 didCommit navigation: \(webView.url?.absoluteString ?? "N/A")")
-        }
-
-        // 5) Called when navigation is complete
-        func webView(_ webView: WKWebView,
-                     didFinish navigation: WKNavigation!) {
-            print("✅ didFinish navigation: \(webView.url?.absoluteString ?? "N/A")")
-        }
-
-        // 6) Called if navigation fails
-        func webView(_ webView: WKWebView,
-                     didFail navigation: WKNavigation!,
-                     withError error: Error) {
-            print("❌ didFail navigation: \(error.localizedDescription)")
-        }
-
-        // 7) Called if navigation fails while the provisional (initial) request is being processed
-        func webView(_ webView: WKWebView,
-                     didFailProvisionalNavigation navigation: WKNavigation!,
-                     withError error: Error) {
-            print("❌ didFailProvisionalNavigation: \(error.localizedDescription)")
-        }
-
-        // 8) Called when the web view receives a server redirect
-        func webView(_ webView: WKWebView,
-                     didReceiveServerRedirectForProvisionalNavigation navigation: WKNavigation!) {
-            print("🔀 didReceiveServerRedirectForProvisionalNavigation")
+        // Handle JavaScript messages for URL changes
+        func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+            if message.name == "urlChangeHandler", let messageBody = message.body as? [String: Any] {
+                if let url = messageBody["url"] as? String {
+                    print("🌍 Page URL Changed: \(url)")
+                }
+            }
         }
     }
 }
