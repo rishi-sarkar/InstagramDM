@@ -10,20 +10,20 @@ struct SafariWebView: UIViewRepresentable {
         
         // Add JavaScript message handler
         contentController.add(context.coordinator, name: "urlChangeHandler")
-        
+
         let config = WKWebViewConfiguration()
         config.userContentController = contentController
 
         let webView = WKWebView(frame: .zero, configuration: config)
         webView.navigationDelegate = context.coordinator
 
-        // ✅ JavaScript to listen for URL changes
+        // ✅ JavaScript to listen for URL changes due to button clicks
         let jsScript = """
         function sendUrlChange() {
             window.webkit.messageHandlers.urlChangeHandler.postMessage({ url: window.location.href });
         }
         
-        // Detect URL changes with pushState, replaceState, and popstate
+        // Detect URL changes using pushState, replaceState, and popstate
         (function(history) {
             let pushState = history.pushState;
             let replaceState = history.replaceState;
@@ -41,6 +41,17 @@ struct SafariWebView: UIViewRepresentable {
             window.addEventListener("popstate", sendUrlChange);
         })(window.history);
 
+        // ✅ Detect button clicks inside Instagram DMs and send potential post URLs
+        document.addEventListener("click", function(event) {
+            let closestAnchor = event.target.closest("a");  // Find closest <a> element
+            if (closestAnchor && closestAnchor.href.includes('/p/')) {
+                window.webkit.messageHandlers.urlChangeHandler.postMessage({
+                    url: closestAnchor.href,
+                    type: "Post Click"
+                });
+            }
+        });
+
         // Send initial page load URL
         sendUrlChange();
         """
@@ -51,6 +62,7 @@ struct SafariWebView: UIViewRepresentable {
         webView.load(URLRequest(url: url))
         return webView
     }
+
 
     func updateUIView(_ uiView: WKWebView, context: Context) {}
 
@@ -66,14 +78,29 @@ struct SafariWebView: UIViewRepresentable {
             self.parent = parent
         }
 
-        // Handle JavaScript messages for URL changes
+        // ✅ Handle JavaScript messages
         func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
             if message.name == "urlChangeHandler", let messageBody = message.body as? [String: Any] {
-                if let url = messageBody["url"] as? String {
-                    print("🌍 Page URL Changed: \(url)")
-                }
+                let url = messageBody["url"] as? String ?? "No URL"
+                let type = messageBody["type"] as? String ?? "Navigation"
+
+                print("📩 JavaScript Event: \(type)")
+                print("🌍 Page URL: \(url)")
             }
         }
+        func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+            if let url = navigationAction.request.url {
+                print("🔗 Intercepted Navigation: \(url.absoluteString)")
+
+                // Detect Instagram post URLs (e.g., https://www.instagram.com/p/POST_ID/)
+                if url.absoluteString.contains("/p/") {
+                    print("📌 Instagram Post Click Detected: \(url.absoluteString)")
+                }
+            }
+
+            decisionHandler(.allow)
+        }
+
     }
 }
 
