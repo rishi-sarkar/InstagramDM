@@ -114,6 +114,7 @@ struct SafariWebView: UIViewRepresentable {
                          url.contains("/common") ||
                          url.contains("about:blank") ||
                          url.contains("paid_ads") ||
+                        url.contains("facebook.com/login") ||
                          url.contains("instagram/login_sync") ||
                          url.contains("paid_ads"))
                     {}
