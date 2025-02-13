@@ -1,9 +1,20 @@
 import SwiftUI
 
 struct InitialScreenView: View {
-    @State private var isUserLoggedIn: Bool = UserDefaults.standard.bool(forKey: "isUserLoggedIn")
-    
+    @State private var postURL: URL? // ✅ Use URL? instead of IdentifiableURL
+
     var body: some View {
-        SafariWebView(url: URL(string: "https://www.instagram.com/direct/inbox")!, isUserLoggedIn: $isUserLoggedIn) // ✅ Pass isUserLoggedIn
+        ZStack {
+            SafariWebView(
+                url: URL(string: "https://www.instagram.com/direct/inbox")!,
+                postURL: $postURL // ✅ Pass URL binding
+            )
+            // ✅ Show custom popup when postURL is set
+            if let url = postURL {
+                PostPopupView(url: url, postURL: $postURL) {
+                    postURL = nil // ✅ Close when tapping outside
+                }
+            }
+        }
     }
 }

@@ -3,133 +3,28 @@ import SwiftUI
 
 struct SafariWebView: UIViewRepresentable {
     let url: URL
-    @Binding var isUserLoggedIn: Bool // ✅ Bind login status
+    @Binding var postURL: URL? // ✅ Use IdentifiableURL wrapper
+
     
     func makeUIView(context: Context) -> WKWebView {
-        let contentController = WKUserContentController()
+            let contentController = WKUserContentController()
+            
+            // Add JavaScript message handler
+            contentController.add(context.coordinator, name: "urlChangeHandler")
+
+            let config = WKWebViewConfiguration()
+            config.userContentController = contentController
+            // ✅ Prevent media auto-play (requires user interaction for playback)
+            config.mediaTypesRequiringUserActionForPlayback = [.all]
+
+            // ✅ Prevent videos from playing inline (forces fullscreen video)
+            config.allowsInlineMediaPlayback = false
+
+            let webView = WKWebView(frame: .zero, configuration: config)
+            webView.navigationDelegate = context.coordinator
+            context.coordinator.webView = webView // ✅ Assign webView reference to Coordinator
+
         
-        // Add JavaScript message handler
-        contentController.add(context.coordinator, name: "urlChangeHandler")
-
-        let config = WKWebViewConfiguration()
-        config.userContentController = contentController
-
-        let webView = WKWebView(frame: .zero, configuration: config)
-        webView.navigationDelegate = context.coordinator
-        context.coordinator.webView = webView // ✅ Assign webView reference to Coordinator
-
-        // ✅ Load Instagram DMs
-        let request = URLRequest(url: url)
-        webView.load(request)
-        
-        DispatchQueue.main.async {
-            context.coordinator.injectJavaScript(into: webView)
-        }
-        
-
-        return webView
-    }
-
-
-
-    func updateUIView(_ uiView: WKWebView, context: Context) {}
-
-    func makeCoordinator() -> Coordinator {
-        Coordinator(self)
-    }
-
-    // ✅ Fix: Make Coordinator conform to WKScriptMessageHandler
-    class Coordinator: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
-        var parent: SafariWebView
-        weak var webView: WKWebView? // Add a weak reference to the WKWebView
-
-        init(_ parent: SafariWebView) {
-            self.parent = parent
-        }
-
-        // ✅ Handle JavaScript messages
-        func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-            if message.name == "urlChangeHandler", let messageBody = message.body as? [String: Any] {
-                let url = messageBody["url"] as? String ?? "No URL"
-                let type = messageBody["type"] as? String ?? "Navigation"
-
-                print("📩 JavaScript Event: \(type)")
-                print("🌍 Page URL: \(url)")
-                
-                
-                
-//                if !(url.contains("/direct") ||
-//                     url.contains("/accounts") ||
-//                     url.contains("/common") ||
-//                     url.contains("about:blank") ||
-//                     url.contains("paid_ads") ||
-//                     url.contains("instagram/login_sync") ||
-//                     url.contains("paid_ads")) {
-//                    
-//                }
-//                else if !url.contains("/direct") {
-//                    if let webView = webView { // Ensure webView is available
-//                        webView.load(URLRequest(url: URL(string: "https://www.instagram.com/direct/inbox/")!))
-//                        print("Redirected bitch")
-//                    }
-//                }
-//                else if !url.contains("/direct") {
-//                    if let webView = webView { // Ensure webView is available
-//                        webView.load(URLRequest(url: URL(string: "https://www.instagram.com/direct/inbox/")!))
-//                        print("Redirected bitch")
-//                    }
-//                }
-//                else if !url.contains("/direct") {
-//                    if let webView = webView { // Ensure webView is available
-//                        webView.load(URLRequest(url: URL(string: "https://www.instagram.com/direct/inbox/")!))
-//                        print("Redirected bitch")
-//                    }
-//                }
-//                else if !url.contains("/direct") {
-//                    if let webView = webView { // Ensure webView is available
-//                        webView.load(URLRequest(url: URL(string: "https://www.instagram.com/direct/inbox/")!))
-//                        print("Redirected bitch")
-//                    }
-//                }
-//                else if !url.contains("/direct") {
-//                    if let webView = webView { // Ensure webView is available
-//                        webView.load(URLRequest(url: URL(string: "https://www.instagram.com/direct/inbox/")!))
-//                        print("Redirected bitch")
-//                    }
-//                }
-//                
-//                
-//                
-//                if !url.contains("/direct") {
-//                    if let webView = webView { // Ensure webView is available
-//                        webView.load(URLRequest(url: URL(string: "https://www.instagram.com/direct/inbox/")!))
-//                        print("Redirected bitch")
-//                    }
-//                }
-            }
-        }
-        func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
-            if let url = navigationAction.request.url {
-                print("🔗 Intercepted Navigation: \(url.absoluteString)")
-
-                // Detect Instagram post URLs (e.g., https://www.instagram.com/p/POST_ID/)
-                if url.absoluteString.contains("/p/") {
-                    print("📌 Instagram Post Click Detected: \(url.absoluteString)")
-                }
-            }
-
-            decisionHandler(.allow)
-        }
-        // ✅ Ensure JavaScript reinjection after every page load
-        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-            print("✅ Page Loaded: \(webView.url?.absoluteString ?? "Unknown")")
-            DispatchQueue.main.async {
-                self.injectJavaScript(into: webView) // Reinject JS every time the page loads
-            }
-        }
-        
-        // ✅ Function to inject JavaScript into the web page
-        func injectJavaScript(into webView: WKWebView) {
             // ✅ JavaScript to listen for URL changes due to button clicks
             let jsScript = """
             function sendUrlChange() {
@@ -168,14 +63,76 @@ struct SafariWebView: UIViewRepresentable {
             // Send initial page load URL
             sendUrlChange();
             """
-            
-            webView.evaluateJavaScript(jsScript, completionHandler: { (result, error) in
-                if let error = error {
-                    print("⚠️ JavaScript Injection Error: \(error.localizedDescription)")
-                } else {
-                    print("✅ JavaScript Injected Successfully")
+
+            let userScript = WKUserScript(source: jsScript, injectionTime: .atDocumentEnd, forMainFrameOnly: false)
+            contentController.addUserScript(userScript)
+
+            webView.load(URLRequest(url: url))
+            return webView
+        }
+
+    func updateUIView(_ uiView: WKWebView, context: Context) {}
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+
+    // ✅ Fix: Make Coordinator conform to WKScriptMessageHandler
+    class Coordinator: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
+        var parent: SafariWebView
+        weak var webView: WKWebView? // Add a weak reference to the WKWebView
+
+        init(_ parent: SafariWebView) {
+            self.parent = parent
+        }
+
+        // ✅ Handle JavaScript messages
+        func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+            if message.name == "urlChangeHandler", let messageBody = message.body as? [String: Any] {
+                let url = messageBody["url"] as? String ?? "No URL"
+                let type = messageBody["type"] as? String ?? "Navigation"
+
+                print("📩 JavaScript Event: \(type)")
+                print("🌍 Page URL: \(url)")
+                print("🌍 Post URL: \(parent.postURL?.absoluteString ?? "N/A")")
+
+                if let postURL = parent.postURL {
+                    if (url.contains("/common") ||
+                         url.contains("about:blank") ||
+                         url.contains("instagram/login_sync"))
+                    {}
+                    else if !url.contains(postURL.absoluteString) {
+                        if let webView = webView { // Ensure webView is available
+                            webView.load(URLRequest(url: URL(string: postURL.absoluteString)!))
+                            print("Redirected to designated post")
+                        }
+                    }
                 }
-            })
+                else {
+                    if (url.contains("/direct") ||
+                         url.contains("/accounts") ||
+                         url.contains("/common") ||
+                         url.contains("about:blank") ||
+                         url.contains("paid_ads") ||
+                         url.contains("instagram/login_sync") ||
+                         url.contains("paid_ads"))
+                    {}
+                    else if url.contains("/p/") {
+                        print("Post Redirect")
+                        if let urlPost = URL(string: url) {
+                            DispatchQueue.main.async {
+                                self.parent.postURL = urlPost // ✅ Store post using wrapper
+                            }
+                        }
+                    }
+                    else {
+                        if let webView = webView { // Ensure webView is available
+                            webView.load(URLRequest(url: URL(string: "https://www.instagram.com/direct/inbox/")!))
+                            print("Redirected to home page")
+                        }
+                    }
+                }
+            }
         }
     }
 }
