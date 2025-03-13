@@ -3,14 +3,73 @@ import SwiftUI
 
 struct SafariWebView: UIViewRepresentable {
     let url: URL
-    @Binding var isUserLoggedIn: Bool // ✅ Bind login status
+    @Binding var postURL: URL? // ✅ Use IdentifiableURL wrapper
 
+    
     func makeUIView(context: Context) -> WKWebView {
-        let webView = WKWebView()
-        webView.navigationDelegate = context.coordinator
-        webView.load(URLRequest(url: url))
-        return webView
-    }
+            let contentController = WKUserContentController()
+            
+            // Add JavaScript message handler
+            contentController.add(context.coordinator, name: "urlChangeHandler")
+
+            let config = WKWebViewConfiguration()
+            config.userContentController = contentController
+            // ✅ Prevent media auto-play (requires user interaction for playback)
+            config.mediaTypesRequiringUserActionForPlayback = [.all]
+
+            // ✅ Prevent videos from playing inline (forces fullscreen video)
+            config.allowsInlineMediaPlayback = false
+
+            let webView = WKWebView(frame: .zero, configuration: config)
+            webView.navigationDelegate = context.coordinator
+            context.coordinator.webView = webView // ✅ Assign webView reference to Coordinator
+
+        
+            // ✅ JavaScript to listen for URL changes due to button clicks
+            let jsScript = """
+            function sendUrlChange() {
+                window.webkit.messageHandlers.urlChangeHandler.postMessage({ url: window.location.href });
+            }
+            
+            // Detect URL changes using pushState, replaceState, and popstate
+            (function(history) {
+                let pushState = history.pushState;
+                let replaceState = history.replaceState;
+                
+                history.pushState = function(state) {
+                    pushState.apply(history, arguments);
+                    sendUrlChange();
+                };
+                
+                history.replaceState = function(state) {
+                    replaceState.apply(history, arguments);
+                    sendUrlChange();
+                };
+                
+                window.addEventListener("popstate", sendUrlChange);
+            })(window.history);
+
+            // ✅ Detect button clicks inside Instagram DMs and send potential post URLs
+            document.addEventListener("click", function(event) {
+                let closestAnchor = event.target.closest("a");  // Find closest <a> element
+                if (closestAnchor && closestAnchor.href.includes('/p/')) {
+                    window.webkit.messageHandlers.urlChangeHandler.postMessage({
+                        url: closestAnchor.href,
+                        type: "Post Click"
+                    });
+                }
+            });
+
+            // Send initial page load URL
+            sendUrlChange();
+            """
+
+            let userScript = WKUserScript(source: jsScript, injectionTime: .atDocumentEnd, forMainFrameOnly: false)
+            contentController.addUserScript(userScript)
+
+            webView.load(URLRequest(url: url))
+            return webView
+        }
 
     func updateUIView(_ uiView: WKWebView, context: Context) {}
 
@@ -18,52 +77,63 @@ struct SafariWebView: UIViewRepresentable {
         Coordinator(self)
     }
 
-    class Coordinator: NSObject, WKNavigationDelegate {
+    // ✅ Fix: Make Coordinator conform to WKScriptMessageHandler
+    class Coordinator: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
         var parent: SafariWebView
+        weak var webView: WKWebView? // Add a weak reference to the WKWebView
 
         init(_ parent: SafariWebView) {
             self.parent = parent
         }
 
-        func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
-            if let currentURL = navigationAction.request.url?.absoluteString {
-                print("📢 Current URL: \(currentURL)") // ✅ Debugging
+        // ✅ Handle JavaScript messages
+        func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+            if message.name == "urlChangeHandler", let messageBody = message.body as? [String: Any] {
+                let url = messageBody["url"] as? String ?? "No URL"
+                let type = messageBody["type"] as? String ?? "Navigation"
 
-                // ✅ Check if redirected to login page (User is NOT logged in) and exit
-                if currentURL.contains("instagram.com/accounts/login") {
-                    print("❌ User is NOT logged in - Exiting Function")
-                    DispatchQueue.main.async {
-                        self.parent.isUserLoggedIn = false
-                        UserDefaults.standard.set(false, forKey: "isUserLoggedIn") // ✅ Save login state
+                print("📩 JavaScript Event: \(type)")
+                print("🌍 Page URL: \(url)")
+                print("🌍 Post URL: \(parent.postURL?.absoluteString ?? "N/A")")
+
+                if let postURL = parent.postURL {
+                    if (url.contains("/common") ||
+                         url.contains("about:blank") ||
+                         url.contains("instagram/login_sync"))
+                    {}
+                    else if !url.contains(postURL.absoluteString) {
+                        if let webView = webView { // Ensure webView is available
+                            webView.load(URLRequest(url: URL(string: postURL.absoluteString)!))
+                            print("Redirected to designated post")
+                        }
                     }
-                    decisionHandler(.allow) // ✅ Allow navigation to login page
-                    return // ✅ Exit function immediately (skip further checks)
                 }
-                else if (!self.parent.isUserLoggedIn) {
-                    print("✅ User Logged In - Enabling Redirects")
-                    DispatchQueue.main.async {
-                        self.parent.isUserLoggedIn = true
-                        UserDefaults.standard.set(true, forKey: "isUserLoggedIn") // ✅ Save login state
-                        NotificationCenter.default.post(name: .userDidLogin, object: nil) // ✅ Notify InitialScreenView
+                else {
+                    if (url.contains("/direct") ||
+                         url.contains("/accounts") ||
+                         url.contains("/common") ||
+                         url.contains("about:blank") ||
+                         url.contains("paid_ads") ||
+                        url.contains("facebook.com/login") ||
+                         url.contains("instagram/login_sync") ||
+                         url.contains("paid_ads"))
+                    {}
+                    else if url.contains("/p/") {
+                        print("Post Redirect")
+                        if let urlPost = URL(string: url) {
+                            DispatchQueue.main.async {
+                                self.parent.postURL = urlPost // ✅ Store post using wrapper
+                            }
+                        }
                     }
-                }
-
-                // ✅ Allow `facebook.com/instagram/login_sync` without redirecting
-                if currentURL.contains("facebook.com/instagram/login_sync") {
-                    print("🆗 Allowing Facebook login sync page")
-                    decisionHandler(.allow)
-                    return
-                }
-
-                // ✅ Redirect if not on `/direct/`
-                if !currentURL.contains("instagram.com/direct/") {
-                    print("🔄 Redirecting to Instagram Direct Inbox")
-                    webView.load(URLRequest(url: URL(string: "https://www.instagram.com/direct/inbox/")!))
-                    decisionHandler(.cancel)
-                    return
+                    else {
+                        if let webView = webView { // Ensure webView is available
+                            webView.load(URLRequest(url: URL(string: "https://www.instagram.com/direct/inbox/")!))
+                            print("Redirected to home page")
+                        }
+                    }
                 }
             }
-            decisionHandler(.allow)
         }
     }
 }

@@ -8,24 +8,22 @@
 
 /* Begin PBXBuildFile section */
 		5B43F87C2D52D70C00963028 /* InstaDMApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B43F87B2D52D70C00963028 /* InstaDMApp.swift */; };
-		5B43F8802D52D70E00963028 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5B43F87F2D52D70E00963028 /* Assets.xcassets */; };
 		5B43F8832D52D70E00963028 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5B43F8822D52D70E00963028 /* Preview Assets.xcassets */; };
 		5B43F8882D52D70E00963028 /* InstaDM.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 5B43F8862D52D70E00963028 /* InstaDM.xcdatamodeld */; };
+		5BC744AB2D5D98440009EE39 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5BC744AA2D5D98440009EE39 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		5B0F05BD2D53CC0C00E01D43 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		5B41BEAD2D53CE68002F30BD /* InstaDM.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = InstaDM.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5B43F87B2D52D70C00963028 /* InstaDMApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstaDMApp.swift; sourceTree = "<group>"; };
-		5B43F87F2D52D70E00963028 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		5B43F8822D52D70E00963028 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		5B43F8872D52D70E00963028 /* InstaDM.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = InstaDM.xcdatamodel; sourceTree = "<group>"; };
+		5BC744AA2D5D98440009EE39 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		5B0F05B42D53CA2300E01D43 /* Controllers */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Controllers; sourceTree = "<group>"; };
 		5B0F05B62D53CA3F00E01D43 /* Views */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Views; sourceTree = "<group>"; };
-		5B0F05B72D53CA5800E01D43 /* Utilities */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Utilities; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -53,10 +51,8 @@
 				5B43F87B2D52D70C00963028 /* InstaDMApp.swift */,
 				5B0F05BD2D53CC0C00E01D43 /* Info.plist */,
 				5B0F05B62D53CA3F00E01D43 /* Views */,
-				5B0F05B42D53CA2300E01D43 /* Controllers */,
-				5B0F05B72D53CA5800E01D43 /* Utilities */,
 				5B43F8862D52D70E00963028 /* InstaDM.xcdatamodeld */,
-				5B43F87F2D52D70E00963028 /* Assets.xcassets */,
+				5BC744AA2D5D98440009EE39 /* Assets.xcassets */,
 				5B43F8812D52D70E00963028 /* Preview Content */,
 			);
 			path = InstaDM;
@@ -86,9 +82,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				5B0F05B42D53CA2300E01D43 /* Controllers */,
 				5B0F05B62D53CA3F00E01D43 /* Views */,
-				5B0F05B72D53CA5800E01D43 /* Utilities */,
 			);
 			name = InstaDM;
 			productName = InstaDM;
@@ -133,8 +127,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5BC744AB2D5D98440009EE39 /* Assets.xcassets in Resources */,
 				5B43F8832D52D70E00963028 /* Preview Assets.xcassets in Resources */,
-				5B43F8802D52D70E00963028 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -284,6 +278,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.5;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -315,6 +310,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.5;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
